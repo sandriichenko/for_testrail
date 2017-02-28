@@ -1,12 +1,13 @@
 from testrail import *
+import config
 
 class Base():
 
     def __init__(self):
-        self.client = APIClient('https://mirantis.testrail.com')
-        self.client.user = ''
-        self.client.password = ''
-        self.project = self._get_project('Mirantis Cloud Platform')
+        self.client = APIClient(config.URL)
+        self.client.user = config.USER
+        self.client.password = config.PASSWORD
+        self.project = self._get_project(config.PROJECT)
 
     def _get_project(self, project_name):
         projects_uri = 'get_projects'
@@ -15,6 +16,19 @@ class Base():
             if project['name'] == project_name:
                 return project
         return None
+
+    def get_result_by_name(self):
+        result = config.RESULT
+        if result == 'Blocked':
+            return 2
+        elif result == 'Passed':
+            return 1
+        elif result == 'Failed':
+            return 5
+        elif result == 'ProdFailed':
+            return 8
+        elif result == 'Skipped':
+            return 6
 
     def send_post_add_result (self, id, bug, status_id, add_result):
         add_result['status_id'] = status_id
@@ -27,6 +41,12 @@ class Base():
 
     def get_plan(self, plan_id):#!
         return self.client.send_get('get_plan/{0}'.format(plan_id))
+
+    def is_test_plan_exist(self, test_plan_name):
+        runs = self.get_plans(self.project['id'])
+        if True in map(lambda item: item['name'] == test_plan_name, runs):
+            return True
+        return False
 
     def get_tests(self, plan_id):#!
         return self.client.send_get('get_tests/{0}'.format(plan_id))
@@ -99,6 +119,31 @@ class Base():
         }
         return self.client.send_post(add_plan_uri, new_plan)
 
+    def add_plan_entry(self, project_id, new_run):
+        add_plan_uri = 'add_plan_entry/{project_id}'.format(
+            project_id=project_id)
+        return self.client.send_post(add_plan_uri, new_run)
+
+
+    def get_suites(self):
+        suites_uri = 'get_suites/{project_id}'.format(
+            project_id=self.project['id'])
+        return self.client.send_get(uri=suites_uri)
+
+    def get_suite(self, suite_id):
+        suite_uri = 'get_suite/{suite_id}'.format(suite_id=suite_id)
+        return self.client.send_get(uri=suite_uri)
+
+    def get_suite_by_name(self, name):
+        for suite in self.get_suites():
+            if suite['name'] == name:
+                return self.get_suite(suite_id=suite['id'])
+
+    def get_plan_by_name(self, name):
+        for plan in self.get_plans(13):
+            if plan['name'] == name:
+                return self.get_plan(plan['id'])
+
     def get_last_tempest_run(self, get_plans):
         for plans in get_plans:
             # print dict
@@ -109,6 +154,17 @@ class Base():
     def add_result(self,test_id , result_to_add):
         return self.client.send_post('add_result/{0}'.format(test_id['id']),
                                      result_to_add)
+
+    def prepare_common_results(self, tests, status_id):
+        results = {"results": []}
+
+        for test in tests:
+            results["results"].append({
+                "test_id": test['id'],
+                "status_id": status_id,
+                "comment": 'Deploy failed',
+            })
+        return results
 
     def get_plan_with_tempest(self):#!
         get_plans = self.get_plans(3)

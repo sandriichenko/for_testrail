@@ -6,7 +6,7 @@ if __name__ == "__main__":
     milestone_name = sys.argv[1]
     call = Base()
     now = str(datetime.now()).split()[0]
-    test_plan_name = '-'.join(['ironic_unerlay',now])
+    test_plan_name = '-'.join(['ironic_underlay',now])
     description = 'Publish the results of Tempest tests in TestRail'
     entries = []
     milestone = call.get_milestone_by_name(milestone_name)
