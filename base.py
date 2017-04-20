@@ -155,6 +155,35 @@ class Base():
         return self.client.send_post('add_result/{0}'.format(test_id['id']),
                                      result_to_add)
 
+    def add_suite(self, name, description=None):
+        return self.client.send_post('add_suite/' + str(self.project['id']),
+                                     dict(name=name, description=description))
+
+    def get_sections(self, suite_id):
+        sections_uri = 'get_sections/{project_id}&suite_id={suite_id}'.format(
+            project_id=self.project['id'],
+            suite_id=suite_id
+        )
+        return self.client.send_get(sections_uri)
+
+    def get_section(self, section_id):
+        section_uri = 'get_section/{section_id}'.format(section_id=section_id)
+        return self.client.send_get(section_uri)
+
+    def get_section_by_name(self, suite_id, section_name):
+        for section in self.get_sections(suite_id=suite_id):
+            if section['name'] == section_name:
+                return self.get_section(section_id=section['id'])
+
+    def add_section(self, suite_id, name, parent_id=None):
+        return self.client.send_post('add_section/' + str(self.project['id']),
+                                     dict(suite_id=suite_id, name=name,
+                                          parent_id=parent_id))
+
+    def add_case(self, section_id, case):
+        add_case_uri = 'add_case/{section_id}'.format(section_id=section_id)
+        return self.client.send_post(add_case_uri, case)
+
     def prepare_common_results(self, tests, status_id):
         results = {"results": []}
 
