@@ -38,7 +38,7 @@ SECTIONS_MAP = {
     "Scenario": ["scenario."],
     "Ironic": ["ironic_tempest_plugin."],
     "Ceilometer": ["ceilometer."],
-    "Designate": [" designate_tempest_plugin."]
+    "Designate": ["designate_tempest_plugin."]
 }
 
 # Use test IDs for titles of TestRail test cases like
