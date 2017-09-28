@@ -29,7 +29,7 @@ def get_title_exist_tests(exist_tests):
     return tests
 
 def get_tests_info(data, exist_tests, tests):
-    test_cases = data['test_cases']
+    test_cases = data['tests']
     t_test_case = []
     for test_case in test_cases:
         if test_case in exist_tests:
@@ -61,8 +61,8 @@ def _get_tests_id(test, tests):
     return result[0]['id']
 
 if __name__ == "__main__":
-    path = sys.argv[1]
-    test_suite = sys.argv[2]
+    path = 'report.json'#sys.argv[1]
+    test_suite = '35042'#sys.argv[2]
     call = Base()
     tests = call.get_tests(test_suite)
 
@@ -72,6 +72,8 @@ if __name__ == "__main__":
     JSON_FILE = os.path.join(os.getcwd(), path)
     with open(JSON_FILE) as data_file:
         data = json.load(data_file)
+
+    # import ipdb; ipdb.set_trace()
     exist_tests = get_title_exist_tests(tests)
 
     test_results = get_tests_info(data, exist_tests, tests)
@@ -83,19 +85,19 @@ if __name__ == "__main__":
                 add_result_my['status_id'] = 5
                 add_result_my['comment'] = result['traceback']
                 send_add_result = 'add_result/' + str(result['test_id'])
-                r = call.client.send_post(send_add_result, add_result)
-                print r
+                # r = call.client.send_post(send_add_result, add_result)
+                # print r
             elif result.get('status') == 'success':
                 add_result_my = add_result
                 add_result_my['status_id'] = 1
                 add_result_my['comment'] = None
-                send_add_result = 'add_result/' + str(result['test_id'])
-                r = call.client.send_post(send_add_result, add_result)
+                # send_add_result = 'add_result/' + str(result['test_id'])
+                # r = call.client.send_post(send_add_result, add_result)
                 print r
             elif result.get('status') == 'skip' :
                 add_result_my = add_result
                 add_result_my['status_id'] = 6
                 add_result_my['comment'] = result['reason']
                 send_add_result = 'add_result/' + str(result['test_id'])
-                r = call.client.send_post(send_add_result, add_result)
-                print r
+                # r = call.client.send_post(send_add_result, add_result)
+                # print r
