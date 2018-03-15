@@ -27,21 +27,20 @@ logger = logging.getLogger(__package__)
 
 
 DELETE_OLD_SECTIONS = False  # User should have proper permissions to do it
-SECTIONS_MAP = {
-     "Telemetry": ["telemetry_tempest_plugin."],
-     "Glance": ["image."],
-     "Keystone": ["identity."],
-     "Neutron": ["network."],
-     "Nova": ["compute."],
-     "Swift": ["object_storage."],
-     "Scenario": ["tempest.scenario."],
-     "Manila": ["manila_tempest_tests"],
-     "Ironic": ["ironic_tempest_plugin."],
-     "Heat": ["heat_tempest_plugin."],
-     "Designate": ["designate_tempest_plugin."],
-     "Barbican": ["barbican_tempest_plugin."],
-     "Horizon": ["tempest_horizon."]
 
+
+SECTIONS_MAP = {
+#    "Ironic": ["baremetal."],
+#    "Cinder": ["cinder."],
+#    "CLI Clients": ["cli_clients."],
+#    "Glance": ["glance."],
+#    "Heat": ["heat."],
+    "Horizon":["test_"],
+#    "Keystone": ["keystone."],
+#    "Neutron": ["neutron."],
+#    "NFV": ["nfv."],
+#    "Nova": ["nova."],
+#    "Object Storage": ["object_storage."]
 }
 
 # Use test IDs for titles of TestRail test cases like
@@ -81,33 +80,35 @@ def create_tr_test_cases(test_cases, milestone_id, type_id=1, priority_id=4,
     tr_test_cases = []
 
     for test_case_name in test_cases:
-        section = choose_section_by_test_name(test_case_name)
-        if section not in SECTIONS_MAP:
-            SECTIONS_MAP[section] = []
-        test_class, test_name = test_case_name.rsplit(".", 1)
+        if "id-" in test_case_name:
+            section = choose_section_by_test_name(test_case_name)
+            if section not in SECTIONS_MAP:
+                SECTIONS_MAP[section] = []
 
-        report_label = test_name
-        for tag in get_tags_by_test_name(test_name):
-            if tag.startswith("id-"):
-                report_label = tag[3:]
-                break
+            test_name = test_case_name
 
-        test_case = {
-            "milestone_id": milestone_id,
-            "section": section,
-            "title": (("%s.%s" % (test_class, test_name)) if USE_TEST_IDs
-                      else test_name),
-            "type_id": type_id,
-            "priority_id": priority_id,
-            "custom_qa_team": qa_team,
-            "estimate": "1m",
-            "refs": "",
-            "custom_test_group": test_class,
-            "custom_test_case_description": test_name,
-             "custom_test_case_steps": [{"Run test": "passed"}],
-            "custom_report_label": report_label
-        }
-        tr_test_cases.append(test_case)
+            report_label = test_name
+	    """
+            for tag in get_tags_by_test_name(test_name):
+                if tag.startswith("id-"):
+                    report_label = tag[3:]
+                    break
+	    """
+            test_case = {
+                "milestone_id": milestone_id,
+                "section": section,
+                "title": (( test_name) if USE_TEST_IDs
+                          else test_name),
+                "type_id": type_id,
+                "priority_id": priority_id,
+                "custom_qa_team": qa_team,
+                "estimate": "1m",
+                "refs": "",
+                "custom_test_case_description": test_name,
+                "custom_test_case_steps": [{"Run test": "passed"}],
+                "custom_report_label": report_label
+            }
+            tr_test_cases.append(test_case)
 
     return tr_test_cases
 
@@ -175,9 +176,13 @@ def main():
         LOG.info("Old sections have been successfully deleted.")
 
     sections_map = {}
+    #import ipdb; ipdb.set_trace()
     for section in sorted(SECTIONS_MAP.keys()):
         LOG.info("Creating section '%s'..." % section)
-        s = call.add_section(suite["id"], section)
+        if (call.get_section_by_name(suite["id"],section)):
+            s = call.get_section_by_name(suite["id"],section)
+        else:
+            s = call.add_section(suite["id"], section)
         LOG.info("Section '%s' has been successfully created." % section)
         sections_map[section] = s["id"]
 
