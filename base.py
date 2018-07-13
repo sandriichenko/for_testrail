@@ -51,10 +51,21 @@ class Base():
     def get_tests(self, plan_id):#!
         return self.client.send_get('get_tests/{0}'.format(plan_id))
 
+    def get_test_runs(self, plan_id, pattern=None):
+        plans_runs = self.get_plan(plan_id)#!get_plans
+        runs = []
+        for run in plans_runs['entries']:
+            if pattern:
+                if pattern in run['name']:
+                    runs.append(run)
+            else:
+                runs.append(run)
+        return runs
+
     def get_tempest_runs(self, plan_id):
-        all_run = self.get_plan(plan_id)#!get_plans
+        runs = self.get_plan(plan_id)#!get_plans
         tempest_runs = []
-        for run in all_run['entries']:
+        for run in runs['entries']:
             if 'Tempest' in run['name']:
                 tempest_runs.append(run)
         return tempest_runs
@@ -66,8 +77,8 @@ class Base():
                 tempest_runs_ids.update({item['id']:item['name']})
         return tempest_runs_ids
 
-    def get_id_of_failed_tests(self, tempest_run_id):#!
-        all_tests = self.get_tests(tempest_run_id)
+    def get_id_of_failed_tests(self, run_id):#!
+        all_tests = self.get_tests(run_id)
         test_ids = []
         for test in all_tests:
             if test['status_id'] == 5:
